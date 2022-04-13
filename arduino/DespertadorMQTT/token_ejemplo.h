@@ -1,0 +1,9 @@
+const char* ssid1 = "...";
+const char* password1 = "...";
+const char* ssid2 = "...";
+const char* password2 = "...";
+const char* brokerMQTT = "...";
+const char* usuarioMQTT = "...";
+const char* passwordMQTT = "...";
+const char* topicMQTT = "...";
+int const puertoMQtt = 1883;
