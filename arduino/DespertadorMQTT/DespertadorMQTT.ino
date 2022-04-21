@@ -1,15 +1,21 @@
 #if defined(ESP32)
 //Librerias para ESP32
+#define EEPROM_SIZE 64
 #include <WiFi.h>
 #include <WiFiMulti.h>
 WiFiMulti wifiMulti;
 
 #elif defined(ESP8266)
 //Librerias para ESP8266
+#define EEPROM_SIZE 12
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
 ESP8266WiFiMulti wifiMulti;
 #endif
+
+#include <EEPROM.h>
+#include <WiFiUdp.h>
+#include <NTPClient.h>
 
 #include <PubSubClient.h>
 
@@ -23,10 +29,30 @@ int const LedWifi = 12;
 boolean EstadoMotor = false;
 const int TiempoEsperaWifi = 5000;
 
+char tablaDias[7][12] = {"Sabado", "Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado"};
+const long diferenciaTiempo = -21600;// -6 UTC
+WiFiUDP ntpUDP;
+NTPClient clienteTiempo(ntpUDP, "pool.ntp.org", diferenciaTiempo);
+
+int ultimoMinuto = -1;
+int unsigned despertarHora = 0;
+int unsigned despertarMinuto = 0;
+#define direccionHora 0
+#define direccionMinuto 1
+
 void setup() {
   Serial.begin(115200);
+  Serial.println("Iniciando Despertador ChepeCarlos");
+
   pinMode(Motor, OUTPUT);
   digitalWrite(Motor, LOW);
+
+  EEPROM.begin(EEPROM_SIZE);
+  despertarHora = EEPROM.read(direccionHora);
+  despertarHora = constrain(despertarHora, 0, 24);
+  despertarMinuto = EEPROM.read(direccionMinuto);
+  despertarMinuto = constrain(despertarMinuto, 0, 60);
+
   configurarMultiWifi();
   configurarMQTT();
 }
@@ -36,6 +62,8 @@ void loop() {
     reconectarMQTT();
   }
   client.loop();
+
+  actualizarTiempo();
 
 }
 
@@ -60,6 +88,9 @@ void configurarMultiWifi() {
   Serial.print(WiFi.SSID());
   Serial.print(" ID:");
   Serial.println(WiFi.localIP());
+
+
+  clienteTiempo.begin();
 }
 
 void configurarMQTT() {
@@ -86,7 +117,6 @@ void reconectarMQTT() {
   while (!client.connected()) {
     if (client.connect(clientId.c_str(), usuarioMQTT, passwordMQTT )) {
       Serial.println("conectado a MQTT");
-      client.publish(topicMQTT, "hello world");
       client.subscribe(topicMQTT);
     } else {
       Serial.print("*");
@@ -98,4 +128,25 @@ void reconectarMQTT() {
       delay(5000);
     }
   }
+}
+
+void actualizarTiempo() {
+  clienteTiempo.update();
+  if (ultimoMinuto != clienteTiempo.getMinutes()) {
+    ultimoMinuto = clienteTiempo.getMinutes();
+    Serial.printf("Tiempo: %s ", tablaDias[clienteTiempo.getDay()]);
+    imprimirTiempo(clienteTiempo.getHours(), clienteTiempo.getMinutes());
+    Serial.print(" despertar: ");
+    imprimirTiempo(despertarHora, despertarMinuto);
+    Serial.println();
+  }
+}
+
+void imprimirTiempo(int hora, int minuto) {
+  boolean pm = false;
+  if (hora > 12) {
+    hora -= 12;
+    pm = true;
+  }
+  Serial.printf("%d:%d %s", hora, minuto, pm ? "pm" : "am");
 }
