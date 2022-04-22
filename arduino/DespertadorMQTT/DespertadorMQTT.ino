@@ -1,3 +1,8 @@
+template<class T> inline Print &operator <<(Print &obj, T arg) {
+  obj.print(arg);
+  return obj;
+}
+
 #if defined(ESP32)
 //Librerias para ESP32
 #define EEPROM_SIZE 64
@@ -37,8 +42,10 @@ NTPClient clienteTiempo(ntpUDP, "pool.ntp.org", diferenciaTiempo);
 int ultimoMinuto = -1;
 int unsigned despertarHora = 0;
 int unsigned despertarMinuto = 0;
+int unsigned despertarDuracion = 0;
 #define direccionHora 0
 #define direccionMinuto 1
+#define direccionDuracion 2
 
 void setup() {
   Serial.begin(115200);
@@ -49,9 +56,10 @@ void setup() {
 
   EEPROM.begin(EEPROM_SIZE);
   despertarHora = EEPROM.read(direccionHora);
-  despertarHora = constrain(despertarHora, 0, 24);
+  despertarHora = constrain(despertarHora, 0, 23);
   despertarMinuto = EEPROM.read(direccionMinuto);
-  despertarMinuto = constrain(despertarMinuto, 0, 60);
+  despertarMinuto = constrain(despertarMinuto, 0, 59);
+  despertarDuracion = EEPROM.read(direccionDuracion);
 
   configurarMultiWifi();
   configurarMQTT();
@@ -100,13 +108,36 @@ void configurarMQTT() {
 }
 
 void mensajeMQTT(char* topic, byte* payload, unsigned int length) {
-  Serial.print("Message arrived [");
+  Serial.print("Mensaje [");
   Serial.print(topic);
   Serial.print("] ");
+  char mensaje[length + 1];
   for (int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
+    mensaje[i] = payload[i];
   }
-  Serial.println();
+  Serial.println(mensaje);
+
+  if (strcmp(topic, "alsw/despertador/hora") == 0) {
+    despertarHora  = atoi(mensaje);
+    despertarHora = constrain(despertarHora, 0, 23);
+    EEPROM.put(direccionHora, despertarHora);
+    Serial.print("Cambiando tiempo: ");
+    EEPROM.commit();
+    Serial.println(despertarHora);
+  } else  if (strcmp(topic, "alsw/despertador/minuto") == 0) {
+    despertarMinuto = atoi(mensaje);
+    despertarMinuto = constrain(despertarMinuto, 0, 59);
+    EEPROM.put(direccionMinuto, despertarMinuto);
+    EEPROM.commit();
+    Serial.print("Cambiando tiempo: ");
+    Serial.println(despertarMinuto);
+  } else if (strcmp(topic, "alsw/despertador/duracion") == 0) {
+    despertarDuracion  = atoi(mensaje);
+    EEPROM.put(direccionDuracion, despertarDuracion);
+    EEPROM.commit();
+    Serial.print("Cambiando duracion: ");
+    Serial.println(despertarDuracion);
+  }
 }
 
 void reconectarMQTT() {
@@ -134,11 +165,11 @@ void actualizarTiempo() {
   clienteTiempo.update();
   if (ultimoMinuto != clienteTiempo.getMinutes()) {
     ultimoMinuto = clienteTiempo.getMinutes();
-    Serial.printf("Tiempo: %s ", tablaDias[clienteTiempo.getDay()]);
+    Serial << "Tiempo: " << tablaDias[clienteTiempo.getDay()] << " ";
     imprimirTiempo(clienteTiempo.getHours(), clienteTiempo.getMinutes());
-    Serial.print(" despertar: ");
+    Serial << " despertar: ";
     imprimirTiempo(despertarHora, despertarMinuto);
-    Serial.println();
+    Serial << " duracion: " << despertarDuracion << "\n";
   }
 }
 
@@ -148,5 +179,6 @@ void imprimirTiempo(int hora, int minuto) {
     hora -= 12;
     pm = true;
   }
-  Serial.printf("%d:%d %s", hora, minuto, pm ? "pm" : "am");
+
+  Serial << hora << ":" << (minuto < 10 ? "0" : "") << minuto << " " << (pm ? "pm" : "am");
 }
