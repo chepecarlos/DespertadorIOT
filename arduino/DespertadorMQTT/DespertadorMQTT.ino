@@ -2,6 +2,7 @@ template<class T> inline Print &operator <<(Print &obj, T arg) {
   obj.print(arg);
   return obj;
 }
+#define endl '\n'
 
 #if defined(ESP32)
 //Librerias para ESP32
@@ -26,6 +27,11 @@ ESP8266WiFiMulti wifiMulti;
 
 #include "token.h"
 
+struct miTiempo {
+  int hora;
+  int minuto;
+};
+
 WiFiClient espClient;
 PubSubClient client(espClient);
 
@@ -40,12 +46,20 @@ WiFiUDP ntpUDP;
 NTPClient clienteTiempo(ntpUDP, "pool.ntp.org", diferenciaTiempo);
 
 int ultimoMinuto = -1;
-int unsigned despertarHora = 0;
-int unsigned despertarMinuto = 0;
+miTiempo despertar = {0, 0};
+miTiempo diferencia = {0, 0};
 int unsigned despertarDuracion = 0;
+boolean vibrarAlarma = false;
+boolean activaAlarma = false;
+
+#define apagar 0
+#define encender 1
+#define cambiar 2
+
 #define direccionHora 0
 #define direccionMinuto 1
 #define direccionDuracion 2
+#define direccionArmado 3
 
 void setup() {
   Serial.begin(115200);
@@ -55,11 +69,12 @@ void setup() {
   digitalWrite(Motor, LOW);
 
   EEPROM.begin(EEPROM_SIZE);
-  despertarHora = EEPROM.read(direccionHora);
-  despertarHora = constrain(despertarHora, 0, 23);
-  despertarMinuto = EEPROM.read(direccionMinuto);
-  despertarMinuto = constrain(despertarMinuto, 0, 59);
+  despertar.hora = EEPROM.read(direccionHora);
+  despertar.hora = constrain(despertar.hora, 0, 23);
+  despertar.minuto = EEPROM.read(direccionMinuto);
+  despertar.minuto = constrain(despertar.minuto, 0, 59);
   despertarDuracion = EEPROM.read(direccionDuracion);
+  activaAlarma = EEPROM.read(direccionArmado);
 
   configurarMultiWifi();
   configurarMQTT();
@@ -72,6 +87,8 @@ void loop() {
   client.loop();
 
   actualizarTiempo();
+
+  actualizarAlarma();
 
 }
 
@@ -97,7 +114,6 @@ void configurarMultiWifi() {
   Serial.print(" ID:");
   Serial.println(WiFi.localIP());
 
-
   clienteTiempo.begin();
 }
 
@@ -118,25 +134,34 @@ void mensajeMQTT(char* topic, byte* payload, unsigned int length) {
   Serial.println(mensaje);
 
   if (strcmp(topic, "alsw/despertador/hora") == 0) {
-    despertarHora  = atoi(mensaje);
-    despertarHora = constrain(despertarHora, 0, 23);
-    EEPROM.put(direccionHora, despertarHora);
-    Serial.print("Cambiando tiempo: ");
+    despertar.hora  = atoi(mensaje);
+    despertar.hora = constrain(despertar.hora, 0, 23);
+    EEPROM.put(direccionHora, despertar.hora);
     EEPROM.commit();
-    Serial.println(despertarHora);
+    Serial << "Cambiando tiempo: " << despertar.hora << endl;
   } else  if (strcmp(topic, "alsw/despertador/minuto") == 0) {
-    despertarMinuto = atoi(mensaje);
-    despertarMinuto = constrain(despertarMinuto, 0, 59);
-    EEPROM.put(direccionMinuto, despertarMinuto);
+    despertar.minuto = atoi(mensaje);
+    despertar.minuto = constrain(despertar.minuto, 0, 59);
+    EEPROM.put(direccionMinuto, despertar.minuto);
     EEPROM.commit();
-    Serial.print("Cambiando tiempo: ");
-    Serial.println(despertarMinuto);
+    Serial << "Cambiando tiempo: " << despertar.minuto << endl;
   } else if (strcmp(topic, "alsw/despertador/duracion") == 0) {
     despertarDuracion  = atoi(mensaje);
     EEPROM.put(direccionDuracion, despertarDuracion);
     EEPROM.commit();
-    Serial.print("Cambiando duracion: ");
-    Serial.println(despertarDuracion);
+    Serial << "Cambiando duracion: " << despertarDuracion << endl;
+  } else if (strcmp(topic, "alsw/despertador/alarma") == 0) {
+    int cambio = atoi(mensaje);
+    if (cambio == apagar) {
+      activaAlarma = false;
+    } else if (cambio == encender) {
+      activaAlarma = true;
+    } else if (cambio == cambiar) {
+      activaAlarma = !activaAlarma;
+    }
+    EEPROM.put(direccionArmado, activaAlarma);
+    EEPROM.commit();
+    Serial << "Alarma: " << (activaAlarma ? "activa" : "apagada") << endl;
   }
 }
 
@@ -167,9 +192,15 @@ void actualizarTiempo() {
     ultimoMinuto = clienteTiempo.getMinutes();
     Serial << "Tiempo: " << tablaDias[clienteTiempo.getDay()] << " ";
     imprimirTiempo(clienteTiempo.getHours(), clienteTiempo.getMinutes());
-    Serial << " despertar: ";
-    imprimirTiempo(despertarHora, despertarMinuto);
-    Serial << " duracion: " << despertarDuracion << "\n";
+    if (activaAlarma) {
+      Serial << " despertar: ";
+      imprimirTiempo(despertar.hora, despertar.minuto);
+      Serial << " duracion: " << despertarDuracion << endl;
+      actualizarFalta();
+      actualizarAlarma();
+    } else {
+      Serial << " alarma: Apagada" << endl;
+    }
   }
 }
 
@@ -181,4 +212,24 @@ void imprimirTiempo(int hora, int minuto) {
   }
 
   Serial << hora << ":" << (minuto < 10 ? "0" : "") << minuto << " " << (pm ? "pm" : "am");
+}
+
+void actualizarFalta() {
+  int actual  = clienteTiempo.getHours() * 60 + clienteTiempo.getMinutes();
+  int tiempoDespertar = despertar.hora * 60 + despertar.minuto;
+  int diferenciaMinutos = 0;
+  if (tiempoDespertar > actual) {
+    diferenciaMinutos = tiempoDespertar - actual;
+  } else if (tiempoDespertar < actual) {
+    diferenciaMinutos = 24 * 60 - actual + tiempoDespertar;
+  }
+  diferencia.minuto = diferenciaMinutos % 60;
+  diferencia.hora = (diferenciaMinutos - diferencia.minuto) / 60;
+  Serial << "Falta: " << diferencia.hora << ":" << (diferencia.minuto < 10 ? "0" : "") << diferencia.minuto << endl;
+}
+
+void actualizarAlarma() {
+  if ( clienteTiempo.getHours() == despertar.hora && clienteTiempo.getMinutes() == despertar.minuto) {
+    Serial.println("Encender Rele");
+  }
 }
