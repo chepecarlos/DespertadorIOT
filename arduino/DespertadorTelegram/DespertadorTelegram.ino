@@ -23,6 +23,10 @@ ESP8266WiFiMulti wifiMulti;
 
 #include <Ticker.h>
 #include <ArduinoOTA.h>
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 #include <TelnetStream.h>
 #include "LittleFS.h"
 #include "CTBot.h"
@@ -61,6 +65,7 @@ void setup() {
   pinMode(botonApagado, INPUT);
 
   configurarRTC();
+  configurarPantalla();
   actualizarEstado();
   conectarWifi();
   Melodia();
@@ -70,4 +75,5 @@ void loop() {
   actualizarWifi();
   actualizarBot();
   actualizarEstado();
+  actualizarPantalla();
 }
