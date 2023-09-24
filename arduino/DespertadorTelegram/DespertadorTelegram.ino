@@ -64,8 +64,19 @@ void setup() {
   pinMode(rele, OUTPUT);
   pinMode(botonApagado, INPUT);
 
-  configurarRTC();
-  configurarPantalla();
+  //Activando codigo a cargarse en procesador 0
+  //Procesador 1 Exclusico para Wifi
+  //Procesador 0 Actualizar pantalla
+  xTaskCreatePinnedToCore(
+    MultiCore,   /* Nombre de la funcion */
+    "MultiCore", /* Nombre del proceso  */
+    10000,      /* Tamano de palabra */
+    NULL,       /* parametros de entrada */
+    0,          /* Prioridas del proceso */
+    NULL,       /* Manejo del proceso  */
+    0);  /* Procesador a poner la operacion */
+  delay(100);
+
   actualizarEstado();
   conectarWifi();
   Melodia();
@@ -75,5 +86,4 @@ void loop() {
   actualizarWifi();
   actualizarBot();
   actualizarEstado();
-  actualizarPantalla();
 }

@@ -14,11 +14,10 @@ void configurarPantalla() {
   pantalla.setTextColor(WHITE);
   pantalla.setTextSize(2);
   actualizarPantalla();
-
 }
 
 void actualizarPantalla() {
-  actualizarRTC();
+  
   
   pantalla.clearDisplay();
   pantalla.setTextColor(WHITE);
