@@ -1,5 +1,4 @@
 
-
 void escrivirArchivo(int id, const char *texto) {
   char direccion[30] = "/";
   char numero[10];
@@ -50,4 +49,27 @@ String leerArchivo(int id) {
 
 void cargarEstado() {
   //Todo: Estado actual
+}
+
+boolean formatiarMemoria() {
+
+#if defined(ESP32)
+  if (!LittleFS.begin(true)) {
+    Serial.println("Error formatiando");
+    return false;
+  }
+#endif
+
+  if (!LittleFS.format()) {
+    Serial.println("Error formatiando");
+     return false;
+  } else {
+    Serial.println("Se boro todo");
+  }
+
+  Serial.println("Listo de LittleFS");
+
+  LittleFS.end();
+
+  return true;
 }

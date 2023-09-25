@@ -3,8 +3,8 @@ boolean alarmaArmada = false;
 boolean alarmaVibrar = false;
 int pinVibrador = 13;
 
-int hora = 1;
-int minuto = 1;
+int hora = 12;
+int minuto = 31;
 boolean pm = false;
 int dias = 0b0111110;
 

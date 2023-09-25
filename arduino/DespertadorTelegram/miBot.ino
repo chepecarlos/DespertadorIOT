@@ -54,6 +54,10 @@ void mensajeBot() {
     TelnetStream << "Mensaje: " << msg.text << " de " << msg.sender.username << " ID:" << msg.sender.id << "\n";
     for (int i = 0; i < cantidadChats; i++) {
       if (msg.sender.id == IDchat[i]) {
+
+
+
+
         if (msg.text.equalsIgnoreCase("/opciones") ) {
           Serial.println("Enviando opciones");
           TelnetStream.println("Enviando opciones");
@@ -61,8 +65,34 @@ void mensajeBot() {
           mensaje += "/estado estado del sistema\n";
           mensaje += "/vibrar enciende vibrador\n";
           mensaje += "/novibrar apaga vibrador\n";
+          mensaje += "/hora +[hora] configura hora de la alarma\n";
+          mensaje += "/formatiar borra memoria interna\n";
           mensaje += "/opciones comandos disponibles\n";
           miBot.sendMessage(msg.sender.id, mensaje);
+        } else if (msg.text.lastIndexOf("/hora") == 0) {
+
+          int espacioPrimer = msg.text.indexOf(" ");
+          int dosPuestos = msg.text.indexOf(":");
+          int espacioSegundo = msg.text.indexOf(" ", espacioPrimer + 1);
+          int final = msg.text.length();
+
+          int horaAlarma = msg.text.substring(espacioPrimer + 1, dosPuestos).toInt();
+          int minutoAlarma = msg.text.substring(dosPuestos + 1, espacioSegundo).toInt();
+          String  pmAlarma = msg.text.substring(espacioSegundo + 1, final);
+
+          if (horaAlarma < 0 || horaAlarma > 12) return;
+          if (minutoAlarma < 0 || minutoAlarma > 59) return;
+          if (!(pmAlarma.equalsIgnoreCase("am") || pmAlarma.equalsIgnoreCase("pm"))) return;
+          // TODO: mensaje de hora incorrecta
+
+          hora = horaAlarma;
+          minuto = minutoAlarma;
+          pm = pmAlarma.equalsIgnoreCase("pm");
+
+          Serial.println("Actualizando Hora");
+          TelnetStream.println("Actualizando Hora");
+          miBot.sendMessage(msg.sender.id, "Actualizando Hora");
+          PedirEstado(msg.sender.id);
         } else if (msg.text.equalsIgnoreCase("/estado") ) {
           Serial.println("Estado Actual");
           TelnetStream.println("Estado Actual");
@@ -77,7 +107,14 @@ void mensajeBot() {
           Serial.println("Parando el Vibrar");
           TelnetStream.println("Parando el Vibrar");
           miBot.sendMessage(msg.sender.id, "Parando el Vibrar");
-        }  else {
+        } else if (msg.text.equalsIgnoreCase("/formatiar")) {
+          if (formatiarMemoria()) {
+            miBot.sendMessage(msg.sender.id, "Se formatio la memoria");
+          } else {
+            miBot.sendMessage(msg.sender.id, "Error formatio la memoria");
+          }
+        }
+        else {
           Serial.println("Enviar /opciones");
           TelnetStream.println("Enviar /opciones");
           miBot.sendMessage(msg.sender.id, "Prueba /opciones");
@@ -108,7 +145,7 @@ void PedirEstado(int64_t IDchat) {
   Mensaje += "Alarma:";
   Mensaje += "\n";
 
-  Mensaje += "Hora:";
+  Mensaje += "Hora: ";
   Mensaje += hora;
   Mensaje += ":";
   Mensaje += (minuto < 10 ? "0" : "");
@@ -123,7 +160,7 @@ void PedirEstado(int64_t IDchat) {
     Mensaje += " ";
   }
   Mensaje += "\n";
-  
+
   Mensaje += "Armada: ";
   Mensaje += (alarmaArmada ? "Activo" : "Apagado");
   Mensaje += "\n";

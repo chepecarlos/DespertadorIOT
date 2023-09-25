@@ -30,8 +30,7 @@ ESP8266WiFiMulti wifiMulti;
 #include <TelnetStream.h>
 #include "LittleFS.h"
 
-
-
+String NombresDia[7] = { "Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab" };
 
 Ticker cambiarLed;
 
