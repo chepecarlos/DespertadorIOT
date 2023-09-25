@@ -29,9 +29,9 @@ ESP8266WiFiMulti wifiMulti;
 #include <Adafruit_SSD1306.h>
 #include <TelnetStream.h>
 #include "LittleFS.h"
-#include "CTBot.h"
 
-CTBot miBot;
+
+
 
 Ticker cambiarLed;
 
@@ -45,7 +45,6 @@ boolean EstadoLed = false;
 int estado = noWifi;
 int estadoAnterior = -1;
 
-int rele = 13;
 int botonApagado = 27;
 int buzzer = 4;
 
@@ -61,7 +60,6 @@ void setup() {
 
   pinMode(ledEstado, OUTPUT);
   pinMode(buzzer, OUTPUT);
-  pinMode(rele, OUTPUT);
   pinMode(botonApagado, INPUT);
 
   //Activando codigo a cargarse en procesador 0
