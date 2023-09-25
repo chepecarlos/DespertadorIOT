@@ -4,8 +4,6 @@ RTC_DS3231 rtc;
 DateTime tiempoActual;
 
 
-String NombresDia[7] = { "Domin", "Lunes", "Marte", "Mierc", "Jueve", "Viern", "Sabad" };
-
 void configurarRTC() {
   if (!rtc.begin()) {
     Serial.println("No encontrado RTC");

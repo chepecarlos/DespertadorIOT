@@ -6,7 +6,7 @@ int pinVibrador = 13;
 int hora = 1;
 int minuto = 1;
 boolean pm = false;
-int dia = 1;
+int dias = 0b0111110;
 
 void inicializarAlarma() {
   pinMode(pinVibrador, OUTPUT);
@@ -28,4 +28,16 @@ void actualizarAlarma() {
 
 void cambiarVibrar(boolean estado) {
   alarmaVibrar = estado;
+}
+
+
+boolean pedirDia(int numero, int id) {
+  id = 6 - id;
+
+  if (numero & (1 << id)) {
+    return true;
+  }
+  else {
+    return false;
+  }
 }

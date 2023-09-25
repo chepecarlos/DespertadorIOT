@@ -38,7 +38,6 @@ void actualizarBot() {
 
 
 void mensajeBot() {
-
   if (estado != conectado) {
     return;
   }
@@ -83,7 +82,6 @@ void mensajeBot() {
           TelnetStream.println("Enviar /opciones");
           miBot.sendMessage(msg.sender.id, "Prueba /opciones");
         }
-
         return;
       }
     }
@@ -96,11 +94,8 @@ void mensajeBot() {
     TelnetStream << "Usuario: " << msg.sender.username << " ID: " << int64ToAscii(msg.sender.id) << "\n";
 
     miBot.sendMessage(msg.sender.id, "No te conosco, lo siento habla con mi amo");
-
   }
 }
-
-
 
 void PedirEstado(int64_t IDchat) {
   String Mensaje = "Estado actual\n";
@@ -110,14 +105,26 @@ void PedirEstado(int64_t IDchat) {
   Mensaje += (esTarde() ? "PM" : "AM");
   Mensaje += "\n";
 
-  Mensaje += "Alarma a ";
+  Mensaje += "Alarma:";
+  Mensaje += "\n";
+
+  Mensaje += "Hora:";
   Mensaje += hora;
   Mensaje += ":";
   Mensaje += (minuto < 10 ? "0" : "");
   Mensaje += minuto;
   Mensaje += " ";
   Mensaje += (pm ? "pm" : "am");
-  Mensaje += ": ";
+  Mensaje += "\n";
+
+  Mensaje += "Dias:";
+  for (int dia = 0; dia < 7; dia++) {
+    Mensaje += (pedirDia(dias, dia) ? NombresDia[dia] : "");;
+    Mensaje += " ";
+  }
+  Mensaje += "\n";
+  
+  Mensaje += "Armada: ";
   Mensaje += (alarmaArmada ? "Activo" : "Apagado");
   Mensaje += "\n";
 
@@ -128,5 +135,4 @@ void PedirEstado(int64_t IDchat) {
   TelnetStream.println(Mensaje);
   Serial.println(Mensaje);
   miBot.sendMessage(IDchat, Mensaje);
-
 }
