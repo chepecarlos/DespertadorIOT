@@ -15,6 +15,7 @@ void inicializarAlarma() {
   hora = leerArchivo("/hora.txt");
   minuto = leerArchivo("/minuto.txt");
   dias = leerArchivo("/dia.txt");
+  pm = leerArchivo("/pm.txt");
 
   Serial << "Alarma: " << hora << ":" << (minuto < 10 ? "0" : "") << minuto << " " << (pm ? "PM" : "AM") << "\n";
 

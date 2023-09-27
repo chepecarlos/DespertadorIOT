@@ -55,9 +55,6 @@ void mensajeBot() {
     for (int i = 0; i < cantidadChats; i++) {
       if (msg.sender.id == IDchat[i]) {
 
-
-
-
         if (msg.text.equalsIgnoreCase("/opciones") ) {
           Serial.println("Enviando opciones");
           TelnetStream.println("Enviando opciones");
@@ -176,7 +173,7 @@ void actualizarHora(String mensaje, int ID) {
   pm = pmAlarma.equalsIgnoreCase("pm");
 
   char pollo[10];
-  
+
   String pollo_tmp = String(hora);
   pollo_tmp.toCharArray(pollo, 10);
   escrivirArchivo("/hora.txt", pollo);
@@ -184,6 +181,10 @@ void actualizarHora(String mensaje, int ID) {
   pollo_tmp = String(minuto);
   pollo_tmp.toCharArray(pollo, 10);
   escrivirArchivo("/minuto.txt", pollo);
+
+  pollo_tmp = String(pm);
+  pollo_tmp.toCharArray(pollo, 10);
+  escrivirArchivo("/pm.txt", pollo);
 
   Serial.println("Actualizando Hora");
   TelnetStream.println("Actualizando Hora");
