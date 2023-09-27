@@ -16,10 +16,12 @@ void inicializarAlarma() {
   minuto = leerArchivo("/minuto.txt");
   dias = leerArchivo("/dia.txt");
   pm = leerArchivo("/pm.txt");
+  alarmaArmada = leerArchivo("/armado.txt");
+  alarmaVibrar = leerArchivo("/vibrar.txt");
 
   Serial << "Alarma: " << hora << ":" << (minuto < 10 ? "0" : "") << minuto << " " << (pm ? "PM" : "AM") << "\n";
 
-  Serial <<  "Dias: " << dias << " ";
+  Serial <<  "Dias: ";
   for (int dia = 0; dia < 7; dia++) {
     Serial << (pedirDia(dias, dia) ? NombresDia[dia] : "") << " ";
   }

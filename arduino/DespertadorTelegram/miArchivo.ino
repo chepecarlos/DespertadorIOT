@@ -36,8 +36,6 @@ int leerArchivo(const char *ruta) {
   archivo.close();
   LittleFS.end();
 
-  Serial.println(Mensaje);
-
   return Mensaje.toInt();
 }
 

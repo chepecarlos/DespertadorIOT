@@ -34,9 +34,6 @@ void actualizarBot() {
   mensajeBot();
 }
 
-
-
-
 void mensajeBot() {
   if (estado != conectado) {
     return;
@@ -62,36 +59,64 @@ void mensajeBot() {
           mensaje += "/estado estado del sistema\n";
           mensaje += "/vibrar enciende vibrador\n";
           mensaje += "/novibrar apaga vibrador\n";
+          mensaje += "/alarma enciende alarma\n";
+          mensaje += "/noalarma apaga alarma\n";
           mensaje += "/hora +[hora] configura hora de la alarma\n";
+          mensaje += "/dia +[dia](lun mar ... dom) Condigura dia de la alarma\n";
           mensaje += "/formatiar borra memoria interna\n";
           mensaje += "/opciones comandos disponibles\n";
           miBot.sendMessage(msg.sender.id, mensaje);
-        } else if (msg.text.lastIndexOf("/hora") == 0) {
+        } else if (msg.text.indexOf("/hora") == 0) {
           actualizarHora(msg.text, msg.sender.id);
-        }  else if (msg.text.lastIndexOf("/dia") == 0) {
+        } else if (msg.text.indexOf("/dia") == 0) {
           actualizarDias(msg.text, msg.sender.id);
-        } else if (msg.text.equalsIgnoreCase("/estado") ) {
-          Serial.println("Estado Actual");
-          TelnetStream.println("Estado Actual");
-          PedirEstado(msg.sender.id);
-        } else if (msg.text.equalsIgnoreCase("/vibrar") || msg.text.equalsIgnoreCase("/si")) {
-          cambiarVibrar(true);
+        } else if (msg.text.equalsIgnoreCase("/alarma")) {
+          alarmaArmada = true;
+          char pollo[10];
+          String pollo_tmp = String(alarmaArmada);
+          pollo_tmp.toCharArray(pollo, 10);
+          escrivirArchivo("/armado.txt", pollo);
+          Serial.println("Alarma Activada");
+          TelnetStream.println("Alarma Activada");
+          miBot.sendMessage(msg.sender.id, "Alarma Activada");
+        } else if (msg.text.equalsIgnoreCase("/noalarma")) {
+          alarmaArmada = false;
+          char pollo[10];
+          String pollo_tmp = String(alarmaArmada);
+          pollo_tmp.toCharArray(pollo, 10);
+          escrivirArchivo("/armado.txt", pollo);
+          Serial.println("Alarma Desactivada");
+          TelnetStream.println("Alarma Desactivada");
+          miBot.sendMessage(msg.sender.id, "Alarma Desactivada");
+        }  else if (msg.text.equalsIgnoreCase("/vibrar") || msg.text.equalsIgnoreCase("/si")) {
+          alarmaVibrar = true;
+          char pollo[10];
+          String pollo_tmp = String(alarmaVibrar);
+          pollo_tmp.toCharArray(pollo, 10);
+          escrivirArchivo("/vibrar.txt", pollo);
           Serial.println("Empezando a Vibrar");
           TelnetStream.println("Empezando a Vibrar");
           miBot.sendMessage(msg.sender.id, "Empezando a Vibrar");
         } else if (msg.text.equalsIgnoreCase("/novibrar") || msg.text.equalsIgnoreCase("/no")) {
-          cambiarVibrar(false);
+          alarmaVibrar = false;
+          char pollo[10];
+          String pollo_tmp = String(alarmaVibrar);
+          pollo_tmp.toCharArray(pollo, 10);
+          escrivirArchivo("/vibrar.txt", pollo);
           Serial.println("Parando el Vibrar");
           TelnetStream.println("Parando el Vibrar");
           miBot.sendMessage(msg.sender.id, "Parando el Vibrar");
+        } else if (msg.text.equalsIgnoreCase("/estado") ) {
+          Serial.println("Estado Actual");
+          TelnetStream.println("Estado Actual");
+          PedirEstado(msg.sender.id);
         } else if (msg.text.equalsIgnoreCase("/formatiar")) {
           if (formatiarMemoria()) {
             miBot.sendMessage(msg.sender.id, "Se formatio la memoria");
           } else {
             miBot.sendMessage(msg.sender.id, "Error formatio la memoria");
           }
-        }
-        else {
+        } else {
           Serial.println("Enviar /opciones");
           TelnetStream.println("Enviar /opciones");
           miBot.sendMessage(msg.sender.id, "Prueba /opciones");
@@ -150,8 +175,6 @@ void PedirEstado(int64_t IDchat) {
   Serial.println(Mensaje);
   miBot.sendMessage(IDchat, Mensaje);
 }
-
-
 
 void actualizarHora(String mensaje, int ID) {
   int espacioPrimer = mensaje.indexOf(" ");
