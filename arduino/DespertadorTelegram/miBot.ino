@@ -70,29 +70,9 @@ void mensajeBot() {
           mensaje += "/opciones comandos disponibles\n";
           miBot.sendMessage(msg.sender.id, mensaje);
         } else if (msg.text.lastIndexOf("/hora") == 0) {
-
-          int espacioPrimer = msg.text.indexOf(" ");
-          int dosPuestos = msg.text.indexOf(":");
-          int espacioSegundo = msg.text.indexOf(" ", espacioPrimer + 1);
-          int final = msg.text.length();
-
-          int horaAlarma = msg.text.substring(espacioPrimer + 1, dosPuestos).toInt();
-          int minutoAlarma = msg.text.substring(dosPuestos + 1, espacioSegundo).toInt();
-          String  pmAlarma = msg.text.substring(espacioSegundo + 1, final);
-
-          if (horaAlarma < 0 || horaAlarma > 12) return;
-          if (minutoAlarma < 0 || minutoAlarma > 59) return;
-          if (!(pmAlarma.equalsIgnoreCase("am") || pmAlarma.equalsIgnoreCase("pm"))) return;
-          // TODO: mensaje de hora incorrecta
-
-          hora = horaAlarma;
-          minuto = minutoAlarma;
-          pm = pmAlarma.equalsIgnoreCase("pm");
-
-          Serial.println("Actualizando Hora");
-          TelnetStream.println("Actualizando Hora");
-          miBot.sendMessage(msg.sender.id, "Actualizando Hora");
-          PedirEstado(msg.sender.id);
+          actualizarHora(msg.text, msg.sender.id);
+        }  else if (msg.text.lastIndexOf("/dia") == 0) {
+          actualizarDias(msg.text, msg.sender.id);
         } else if (msg.text.equalsIgnoreCase("/estado") ) {
           Serial.println("Estado Actual");
           TelnetStream.println("Estado Actual");
@@ -172,4 +152,79 @@ void PedirEstado(int64_t IDchat) {
   TelnetStream.println(Mensaje);
   Serial.println(Mensaje);
   miBot.sendMessage(IDchat, Mensaje);
+}
+
+
+
+void actualizarHora(String mensaje, int ID) {
+  int espacioPrimer = mensaje.indexOf(" ");
+  int dosPuestos = mensaje.indexOf(":");
+  int espacioSegundo = mensaje.indexOf(" ", espacioPrimer + 1);
+  int final = mensaje.length();
+
+  int horaAlarma = mensaje.substring(espacioPrimer + 1, dosPuestos).toInt();
+  int minutoAlarma = mensaje.substring(dosPuestos + 1, espacioSegundo).toInt();
+  String  pmAlarma = mensaje.substring(espacioSegundo + 1, final);
+
+  if (horaAlarma < 0 || horaAlarma > 12) return;
+  if (minutoAlarma < 0 || minutoAlarma > 59) return;
+  if (!(pmAlarma.equalsIgnoreCase("am") || pmAlarma.equalsIgnoreCase("pm"))) return;
+  // TODO: mensaje de hora incorrecta
+
+  hora = horaAlarma;
+  minuto = minutoAlarma;
+  pm = pmAlarma.equalsIgnoreCase("pm");
+
+  char pollo[10];
+  
+  String pollo_tmp = String(hora);
+  pollo_tmp.toCharArray(pollo, 10);
+  escrivirArchivo("/hora.txt", pollo);
+
+  pollo_tmp = String(minuto);
+  pollo_tmp.toCharArray(pollo, 10);
+  escrivirArchivo("/minuto.txt", pollo);
+
+  Serial.println("Actualizando Hora");
+  TelnetStream.println("Actualizando Hora");
+  miBot.sendMessage(ID, "Actualizando Hora");
+  PedirEstado(ID);
+}
+
+void actualizarDias(String mensaje, int ID) {
+  int elNumero = 0;
+  boolean Segir = true;
+  int espacioPrimero = 0;
+  int espacioSiquiente = mensaje.indexOf(" ");
+  int final = mensaje.length();
+  String diaActual = "";
+  do {
+    espacioPrimero = espacioSiquiente;
+    espacioSiquiente = mensaje.indexOf(" ", espacioPrimero + 1);
+
+    if (espacioSiquiente < 0) {
+      Segir = false;
+      espacioSiquiente = final;
+    }
+    diaActual = mensaje.substring(espacioPrimero + 1, espacioSiquiente);
+
+    for (int i = 0; i < 7; i++) {
+      if (diaActual.equalsIgnoreCase(NombresDia[i])) {
+        elNumero = elNumero | (1 << (6 - i));
+        continue;
+      }
+    }
+  } while (Segir);
+
+  dias = elNumero;
+
+  char pollo[10];
+  String pollo_tmp = String(dias);
+  pollo_tmp.toCharArray(pollo, 10);
+  escrivirArchivo("/dia.txt", pollo);
+
+  Serial.println("Dias salvados");
+  TelnetStream.println("Dias salvados");
+  miBot.sendMessage(ID, "Dias salvados");
+  PedirEstado(ID);
 }

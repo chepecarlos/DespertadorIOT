@@ -11,6 +11,18 @@ int dias = 0b0111110;
 void inicializarAlarma() {
   pinMode(pinVibrador, OUTPUT);
   digitalWrite(pinVibrador, LOW);
+
+  hora = leerArchivo("/hora.txt");
+  minuto = leerArchivo("/minuto.txt");
+  dias = leerArchivo("/dia.txt");
+
+  Serial << "Alarma: " << hora << ":" << (minuto < 10 ? "0" : "") << minuto << " " << (pm ? "PM" : "AM") << "\n";
+
+  Serial <<  "Dias: " << dias << " ";
+  for (int dia = 0; dia < 7; dia++) {
+    Serial << (pedirDia(dias, dia) ? NombresDia[dia] : "") << " ";
+  }
+  Serial << "\n";
 }
 
 void actualizarAlarma() {
