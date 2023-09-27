@@ -8,6 +8,13 @@ void configurarBot() {
   miBot.setTelegramToken(token);
 }
 
+void enviarMensaje(String mensaje) {
+  for (int i = 0; i < cantidadChats; i++) {
+    miBot.sendMessage(IDchat[i], mensaje);
+  }
+  Serial.println("Mensaje Enviado");
+}
+
 void mensajeBienbenidaBot() {
   if (!bienbenidaBot) {
     bienbenidaBot = true;
@@ -71,20 +78,24 @@ void mensajeBot() {
         } else if (msg.text.indexOf("/dia") == 0) {
           actualizarDias(msg.text, msg.sender.id);
         } else if (msg.text.equalsIgnoreCase("/alarma")) {
-          alarmaArmada = true;
+          alarmaActiva = true;
           char pollo[10];
-          String pollo_tmp = String(alarmaArmada);
+          String pollo_tmp = String(alarmaActiva);
           pollo_tmp.toCharArray(pollo, 10);
-          escrivirArchivo("/armado.txt", pollo);
+          escrivirArchivo("/alarma.txt", pollo);
+          ultimaAlarma = -1;
+          pollo_tmp = String(ultimaAlarma);
+          pollo_tmp.toCharArray(pollo, 10);
+          escrivirArchivo("/ultima_alarma.txt", pollo);
           Serial.println("Alarma Activada");
           TelnetStream.println("Alarma Activada");
           miBot.sendMessage(msg.sender.id, "Alarma Activada");
         } else if (msg.text.equalsIgnoreCase("/noalarma")) {
-          alarmaArmada = false;
+          alarmaActiva = false;
           char pollo[10];
-          String pollo_tmp = String(alarmaArmada);
+          String pollo_tmp = String(alarmaActiva);
           pollo_tmp.toCharArray(pollo, 10);
-          escrivirArchivo("/armado.txt", pollo);
+          escrivirArchivo("/alarma.txt", pollo);
           Serial.println("Alarma Desactivada");
           TelnetStream.println("Alarma Desactivada");
           miBot.sendMessage(msg.sender.id, "Alarma Desactivada");
@@ -163,8 +174,8 @@ void PedirEstado(int64_t IDchat) {
   }
   Mensaje += "\n";
 
-  Mensaje += "Armada: ";
-  Mensaje += (alarmaArmada ? "Activo" : "Apagado");
+  Mensaje += "Alarma: ";
+  Mensaje += (alarmaActiva ? "Activo" : "Apagado");
   Mensaje += "\n";
 
   Mensaje += "Vibracion: ";

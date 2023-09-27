@@ -69,6 +69,23 @@ String diaActual() {
   return NombresDia[DiaSemana];
 }
 
+int diaSemana() {
+  return tiempoActual.dayOfTheWeek();;
+}
+
+int obtenerDia() {
+  return tiempoActual.day();
+}
+
+int obtenerHora() {
+  return tiempoActual.twelveHour();
+}
+
+int obtenerMinuto() {
+  return tiempoActual.minute();
+}
+
+
 int temperaturaActual() {
   return rtc.getTemperature();
 }

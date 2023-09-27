@@ -3,6 +3,7 @@ void conectarWifi() {
 
   wifiMulti.addAP(ssid_1, password_1);
   wifiMulti.addAP(ssid_2, password_2);
+  wifiMulti.addAP(ssid_3, password_3);
 
   Serial.println("Conectando con Wifi...");
   if (wifiMulti.run() == WL_CONNECTED) {
