@@ -19,7 +19,7 @@ void escrivirArchivo(const char *ruta, const char *texto) {
 }
 
 
-int leerArchivo(const char *ruta) {
+uint32_t leerArchivo(const char *ruta) {
 
   LittleFS.begin();
   File archivo = LittleFS.open(ruta, "r");

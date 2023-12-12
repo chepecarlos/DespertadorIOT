@@ -1,5 +1,5 @@
 
-void MultiCore( void * pvParameters ) {
+void MultiCore(void* pvParameters) {
 
   inicializarAlarma();
   configurarRTC();

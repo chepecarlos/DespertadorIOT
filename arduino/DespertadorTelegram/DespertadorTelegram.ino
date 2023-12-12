@@ -18,9 +18,9 @@ WiFiMulti wifiMulti;
 ESP8266WiFiMulti wifiMulti;
 #endif
 
-
 #include "token.h"
 
+#include "RTClib.h"
 #include <Ticker.h>
 #include <ArduinoOTA.h>
 #include <SPI.h>
@@ -33,6 +33,8 @@ ESP8266WiFiMulti wifiMulti;
 String NombresDia[7] = { "Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab" };
 
 Ticker cambiarLed;
+Ticker cambiarVibrador;
+Ticker cambiarMelodia;
 
 #define noWifi 0
 #define noBot 1
@@ -43,9 +45,14 @@ int ledEstado = 4;
 boolean EstadoLed = false;
 int estado = noWifi;
 int estadoAnterior = -1;
+boolean enviarMensajeDesperta = false;
 
 int botonApagado = 27;
 int buzzer = 4;
+
+RTC_DS3231 rtc;
+DateTime tiempoActual;
+DateTime tiempoAlarma;
 
 void funcionLed() {
   EstadoLed = !EstadoLed;
@@ -67,11 +74,11 @@ void setup() {
   xTaskCreatePinnedToCore(
     MultiCore,   /* Nombre de la funcion */
     "MultiCore", /* Nombre del proceso  */
-    10000,      /* Tamano de palabra */
-    NULL,       /* parametros de entrada */
-    0,          /* Prioridas del proceso */
-    NULL,       /* Manejo del proceso  */
-    0);  /* Procesador a poner la operacion */
+    10000,       /* Tamano de palabra */
+    NULL,        /* parametros de entrada */
+    0,           /* Prioridas del proceso */
+    NULL,        /* Manejo del proceso  */
+    0);          /* Procesador a poner la operacion */
   delay(100);
 
   actualizarEstado();
@@ -83,4 +90,9 @@ void loop() {
   actualizarWifi();
   actualizarBot();
   actualizarEstado();
+  if (enviarMensajeDesperta) {
+    if (enviarMensaje("Empezando a despertar a ChepeCarlos")) {
+      enviarMensajeDesperta = false;
+    }
+  }
 }

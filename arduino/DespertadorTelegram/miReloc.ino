@@ -1,8 +1,3 @@
-#include "RTClib.h"
-
-RTC_DS3231 rtc;
-DateTime tiempoActual;
-
 
 void configurarRTC() {
   if (!rtc.begin()) {
@@ -12,7 +7,6 @@ void configurarRTC() {
   Serial.println("RTC Cargado");
   actualizarRTC();
 }
-
 
 void actualizarRTC() {
   tiempoActual = rtc.now();
@@ -88,4 +82,28 @@ int obtenerMinuto() {
 
 int temperaturaActual() {
   return rtc.getTemperature();
+}
+
+int diaAlarma() {
+  return tiempoAlarma.day();
+}
+
+int mesAlarma() {
+  return tiempoAlarma.month();
+}
+
+int annoAlarma() {
+  return tiempoAlarma.year();
+}
+
+int horaAlarma() {
+  return tiempoAlarma.twelveHour();
+}
+
+int minutoAlarma() {
+  return tiempoAlarma.minute();
+}
+
+boolean pmAlarma(){
+  return tiempoAlarma.isPM();
 }

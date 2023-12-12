@@ -8,11 +8,16 @@ void configurarBot() {
   miBot.setTelegramToken(token);
 }
 
-void enviarMensaje(String mensaje) {
+boolean enviarMensaje(String mensaje) {
+  if (estado != conectado) {
+    return false;
+  }
+
   for (int i = 0; i < cantidadChats; i++) {
     miBot.sendMessage(IDchat[i], mensaje);
   }
   Serial.println("Mensaje Enviado");
+  return true;
 }
 
 void mensajeBienbenidaBot() {
@@ -59,7 +64,7 @@ void mensajeBot() {
     for (int i = 0; i < cantidadChats; i++) {
       if (msg.sender.id == IDchat[i]) {
 
-        if (msg.text.equalsIgnoreCase("/opciones") ) {
+        if (msg.text.equalsIgnoreCase("/opciones")) {
           Serial.println("Enviando opciones");
           TelnetStream.println("Enviando opciones");
           String mensaje = "Opciones disponibles:\n";
@@ -75,21 +80,23 @@ void mensajeBot() {
           miBot.sendMessage(msg.sender.id, mensaje);
         } else if (msg.text.indexOf("/hora") == 0) {
           actualizarHora(msg.text, msg.sender.id);
+          if (alarmaActiva) siquienteAlarma();
+          PedirEstado(msg.sender.id);
         } else if (msg.text.indexOf("/dia") == 0) {
           actualizarDias(msg.text, msg.sender.id);
+          if (alarmaActiva) siquienteAlarma();
+          PedirEstado(msg.sender.id);
         } else if (msg.text.equalsIgnoreCase("/alarma")) {
           alarmaActiva = true;
           char pollo[10];
           String pollo_tmp = String(alarmaActiva);
           pollo_tmp.toCharArray(pollo, 10);
           escrivirArchivo("/alarma.txt", pollo);
-          ultimaAlarma = -1;
-          pollo_tmp = String(ultimaAlarma);
-          pollo_tmp.toCharArray(pollo, 10);
-          escrivirArchivo("/ultima_alarma.txt", pollo);
+          siquienteAlarma();
           Serial.println("Alarma Activada");
           TelnetStream.println("Alarma Activada");
           miBot.sendMessage(msg.sender.id, "Alarma Activada");
+
         } else if (msg.text.equalsIgnoreCase("/noalarma")) {
           alarmaActiva = false;
           char pollo[10];
@@ -99,7 +106,7 @@ void mensajeBot() {
           Serial.println("Alarma Desactivada");
           TelnetStream.println("Alarma Desactivada");
           miBot.sendMessage(msg.sender.id, "Alarma Desactivada");
-        }  else if (msg.text.equalsIgnoreCase("/vibrar") || msg.text.equalsIgnoreCase("/si")) {
+        } else if (msg.text.equalsIgnoreCase("/vibrar") || msg.text.equalsIgnoreCase("/si")) {
           alarmaVibrar = true;
           char pollo[10];
           String pollo_tmp = String(alarmaVibrar);
@@ -117,7 +124,7 @@ void mensajeBot() {
           Serial.println("Parando el Vibrar");
           TelnetStream.println("Parando el Vibrar");
           miBot.sendMessage(msg.sender.id, "Parando el Vibrar");
-        } else if (msg.text.equalsIgnoreCase("/estado") ) {
+        } else if (msg.text.equalsIgnoreCase("/estado")) {
           Serial.println("Estado Actual");
           TelnetStream.println("Estado Actual");
           PedirEstado(msg.sender.id);
@@ -153,6 +160,8 @@ void PedirEstado(int64_t IDchat) {
   Mensaje += horaActual();
   Mensaje += " ";
   Mensaje += (esTarde() ? "PM" : "AM");
+  Mensaje += " ";
+  Mensaje += fechaActual();
   Mensaje += "\n";
 
   Mensaje += "Alarma:";
@@ -167,12 +176,33 @@ void PedirEstado(int64_t IDchat) {
   Mensaje += (pm ? "pm" : "am");
   Mensaje += "\n";
 
-  Mensaje += "Dias:";
+  Mensaje += "Dias: ";
   for (int dia = 0; dia < 7; dia++) {
-    Mensaje += (pedirDia(dias, dia) ? NombresDia[dia] : "");;
-    Mensaje += " ";
+    if (pedirDia(dias, dia)) {
+      Mensaje += NombresDia[dia];
+      Mensaje += " ";
+    }
   }
   Mensaje += "\n";
+
+  if (alarmaActiva) {
+    Mensaje += "Siquiente Alarma: ";
+    Mensaje += NombresDia[tiempoAlarma.dayOfTheWeek()];
+    Mensaje += ", ";
+    Mensaje += diaAlarma();
+    Mensaje += "/";
+    Mensaje += mesAlarma();
+    Mensaje += "/";
+    Mensaje += annoAlarma();
+    Mensaje += " a ";
+    Mensaje += horaAlarma();
+    Mensaje += ":";
+    Mensaje += (minutoAlarma() < 10 ? "0" : "");
+    Mensaje += minutoAlarma();
+    Mensaje += " ";
+    Mensaje += (pmAlarma() ? "pm" : "am");
+    Mensaje += "\n";
+  }
 
   Mensaje += "Alarma: ";
   Mensaje += (alarmaActiva ? "Activo" : "Apagado");
@@ -195,7 +225,7 @@ void actualizarHora(String mensaje, int ID) {
 
   int horaAlarma = mensaje.substring(espacioPrimer + 1, dosPuestos).toInt();
   int minutoAlarma = mensaje.substring(dosPuestos + 1, espacioSegundo).toInt();
-  String  pmAlarma = mensaje.substring(espacioSegundo + 1, final);
+  String pmAlarma = mensaje.substring(espacioSegundo + 1, final);
 
   if (horaAlarma < 0 || horaAlarma > 12) return;
   if (minutoAlarma < 0 || minutoAlarma > 59) return;
@@ -223,7 +253,6 @@ void actualizarHora(String mensaje, int ID) {
   Serial.println("Actualizando Hora");
   TelnetStream.println("Actualizando Hora");
   miBot.sendMessage(ID, "Actualizando Hora");
-  PedirEstado(ID);
 }
 
 void actualizarDias(String mensaje, int ID) {
@@ -261,5 +290,4 @@ void actualizarDias(String mensaje, int ID) {
   Serial.println("Dias salvados");
   TelnetStream.println("Dias salvados");
   miBot.sendMessage(ID, "Dias salvados");
-  PedirEstado(ID);
 }

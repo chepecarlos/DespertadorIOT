@@ -1,6 +1,5 @@
 
 boolean alarmaActiva = false;
-
 boolean alarmaVibrar = false;
 boolean alarmaVibrarAnteior = true;
 
@@ -12,7 +11,29 @@ int minuto = 31;
 boolean pm = false;
 int dias = 0b0111110;
 
-int ultimaAlarma = -1;
+void siquienteAlarma() {
+  if (dias == 0) return;
+
+  tiempoAlarma = DateTime(tiempoActual.year(), tiempoActual.month(), tiempoActual.day(), hora, minuto);
+
+  if (!pm && hora == 12) {
+    tiempoAlarma = tiempoAlarma - TimeSpan(0, 12, 0, 0);
+  } else if (pm) {
+    tiempoAlarma = tiempoAlarma + TimeSpan(0, 12, 0, 0);
+  }
+
+  while (tiempoAlarma < tiempoActual || !pedirDia(dias, tiempoAlarma.dayOfTheWeek())) {
+    tiempoAlarma = tiempoAlarma + TimeSpan(1, 0, 0, 0);
+  }
+
+  char pollo[20];
+  String pollo_tmp = String(tiempoAlarma.unixtime());
+  pollo_tmp.toCharArray(pollo, 20);
+  escrivirArchivo("/tiempoalarma.txt", pollo);
+
+  Serial << tiempoAlarma.unixtime() << " " << pollo_tmp << " " << pollo << "\n";
+  TelnetStream << tiempoAlarma.unixtime() << " " << pollo_tmp << " " << pollo << "\n";
+}
 
 void inicializarAlarma() {
   pinMode(pinVibrador, OUTPUT);
@@ -24,15 +45,22 @@ void inicializarAlarma() {
   pm = leerArchivo("/pm.txt");
   alarmaActiva = leerArchivo("/alarma.txt");
   alarmaVibrar = leerArchivo("/vibrar.txt");
-  ultimaAlarma = leerArchivo("/ultima_alarma.txt");
+  alarmaVibrarAnteior = !alarmaVibrar;
+  tiempoAlarma = DateTime(leerArchivo("/tiempoalarma.txt"));
 
   Serial << "Alarma: " << hora << ":" << (minuto < 10 ? "0" : "") << minuto << " " << (pm ? "PM" : "AM") << "\n";
+  TelnetStream << "Alarma: " << hora << ":" << (minuto < 10 ? "0" : "") << minuto << " " << (pm ? "PM" : "AM") << "\n";
 
-  Serial <<  "Dias: ";
+  Serial << "Dias: ";
+  TelnetStream << "Dias: ";
   for (int dia = 0; dia < 7; dia++) {
     Serial << (pedirDia(dias, dia) ? NombresDia[dia] : "") << " ";
   }
   Serial << "\n";
+  TelnetStream << "\n";
+
+  Serial << "Unix" << tiempoAlarma.unixtime() << "\n";
+  TelnetStream << "Unix" << tiempoAlarma.unixtime() << "\n";
 }
 
 void actualizarVibrador() {
@@ -50,6 +78,7 @@ void actualizarAlarma() {
     if (alarmaVibrar) {
       cambiarVibrador.attach(1.5, actualizarVibrador);
       cambiarMelodia.attach(0.25 , MelodiaDesarmada);
+      enviarMensajeDesperta = true;
     } else {
       cambiarVibrador.detach();
       cambiarMelodia.detach();
@@ -59,28 +88,19 @@ void actualizarAlarma() {
     alarmaVibrarAnteior = alarmaVibrar;
   }
 
-  if (alarmaActiva) {
-    // mejora usar diferencial
+  if (alarmaActiva && !alarmaVibrar) {
+    if (tiempoActual > tiempoAlarma) {
+      alarmaVibrar = true;
+      char pollo[10];
+      String pollo_tmp = String(alarmaVibrar);
+      pollo_tmp.toCharArray(pollo, 10);
+      escrivirArchivo("/vibrar.txt", pollo);
+      siquienteAlarma();
 
-    if (ultimaAlarma == obtenerDia()) return;
-    if (!pedirDia(dias, diaSemana())) return;
-    if (pm != esTarde()) return;
-    if (hora != obtenerHora()) return;
-    if (minuto != obtenerMinuto()) return;
-
-    Serial.println("Empezando a despertar a ChepeCarlos");
-    enviarMensaje("Empezando a despertar a ChepeCarlos");
-
-    alarmaVibrar = true;
-    ultimaAlarma = obtenerDia();
-    
-    char pollo[10];
-    String pollo_tmp = String(ultimaAlarma);
-    pollo_tmp.toCharArray(pollo, 10);
-    escrivirArchivo("/ultima_alarma.txt", pollo);
-    pollo_tmp = String(alarmaVibrar);
-    pollo_tmp.toCharArray(pollo, 10);
-    escrivirArchivo("/vibrar.txt", pollo);
+      Serial.println("Empezando a despertar a ChepeCarlos");
+      TelnetStream.println("Empezando a despertar a ChepeCarlos");
+      enviarMensajeDesperta = true;
+    }
   }
 }
 
@@ -94,8 +114,7 @@ boolean pedirDia(int numero, int id) {
 
   if (numero & (1 << id)) {
     return true;
-  }
-  else {
+  } else {
     return false;
   }
 }
