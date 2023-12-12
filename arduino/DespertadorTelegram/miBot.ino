@@ -74,7 +74,7 @@ void mensajeBot() {
           mensaje += "/alarma enciende alarma\n";
           mensaje += "/noalarma apaga alarma\n";
           mensaje += "/hora +[hora] configura hora de la alarma\n";
-          mensaje += "/dia +[dia](lun mar ... dom) Condigura dia de la alarma\n";
+          mensaje += "/dia +[dia](lun mar ... dom o todos) Condigura dia de la alarma\n";
           mensaje += "/formatiar borra memoria interna\n";
           mensaje += "/opciones comandos disponibles\n";
           miBot.sendMessage(msg.sender.id, mensaje);
@@ -278,6 +278,13 @@ void actualizarDias(String mensaje, int ID) {
         continue;
       }
     }
+
+    if (diaActual.equalsIgnoreCase("todos")) {
+      for (int i = 0; i < 7; i++) {
+        elNumero = elNumero | (1 << (6 - i));
+      }
+    }
+
   } while (Segir);
 
   dias = elNumero;
