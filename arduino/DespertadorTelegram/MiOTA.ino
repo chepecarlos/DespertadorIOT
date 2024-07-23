@@ -34,7 +34,5 @@ void configurarOTA() {
     }
   });
 
-
-
   ArduinoOTA.begin();
 }

@@ -40,11 +40,6 @@ uint32_t leerArchivo(const char *ruta) {
 }
 
 
-
-
-
-
-
 void escrivirArchivo(int id, const char *texto) {
   char direccion[30] = "/";
   char numero[10];

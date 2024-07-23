@@ -1,5 +1,5 @@
 #define Ancho_Pantalla 128
-#define Alto_Pantalla 32 // 64
+#define Alto_Pantalla 32  // 64
 #define Direccion_Pantalla 0x3C
 #define Reset_Pantalla -1
 
@@ -17,8 +17,6 @@ void configurarPantalla() {
 }
 
 void actualizarPantalla() {
-  
-  
   pantalla.clearDisplay();
   pantalla.setTextColor(WHITE);
   pantalla.setTextSize(1);

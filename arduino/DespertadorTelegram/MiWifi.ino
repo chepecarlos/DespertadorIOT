@@ -40,7 +40,6 @@ void actualizarWifi() {
 #endif
   ArduinoOTA.handle();
   delay(10);
-
 }
 
 

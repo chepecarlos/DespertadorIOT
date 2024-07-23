@@ -11,7 +11,7 @@ void actualizarEstado() {
         cambiarLed.attach(0.1, funcionLed);
         Serial.print("No Wifi");
         TelnetStream.print("No Wifi");
-        break; 
+        break;
       case noBot:
         cambiarLed.attach(1, funcionLed);
         Serial.print("No Bot");
