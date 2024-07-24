@@ -1,7 +1,7 @@
-template<class T> inline Print &operator<<(Print &obj, T arg) {
-  obj.print(arg);
-  return obj;
-}
+// template<class T> inline Print &operator<<(Print &obj, T arg) {
+//   obj.print(arg);
+//   return obj;
+// }
 
 #if defined(ESP32)
 //Librerias para ESP32
@@ -29,6 +29,15 @@ ESP8266WiFiMulti wifiMulti;
 #include <Adafruit_SSD1306.h>
 #include <TelnetStream.h>
 #include "LittleFS.h"
+
+struct MiHora {
+  int Hora;
+  int Minuto;
+  bool Pm;
+};
+
+bool programarRTC = false;
+MiHora horaActualizar = { -1, 0, false };
 
 String NombresDia[7] = { "Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab" };
 

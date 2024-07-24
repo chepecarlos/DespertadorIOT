@@ -1,4 +1,5 @@
 
+
 void configurarRTC() {
   if (!rtc.begin()) {
     Serial.println("No encontrado RTC");
@@ -64,7 +65,8 @@ String diaActual() {
 }
 
 int diaSemana() {
-  return tiempoActual.dayOfTheWeek();;
+  return tiempoActual.dayOfTheWeek();
+  ;
 }
 
 int obtenerDia() {
@@ -104,6 +106,20 @@ int minutoAlarma() {
   return tiempoAlarma.minute();
 }
 
-boolean pmAlarma(){
+boolean pmAlarma() {
   return tiempoAlarma.isPM();
+}
+
+void escribirRTC() {
+  if (programarRTC) {
+    if (horaActualizar.Pm) {
+      horaActualizar.Hora = horaActualizar.Hora + 12;
+    }
+    int anno = tiempoActual.year();
+    int mes = tiempoActual.month();
+    int dia = tiempoActual.day();
+    rtc.adjust(DateTime(anno, mes, dia, horaActualizar.Hora, horaActualizar.Minuto, 0));
+    Serial.println("Configurando hora nueva");
+    programarRTC = false;
+  }
 }

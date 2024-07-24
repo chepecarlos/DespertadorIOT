@@ -1,6 +1,6 @@
 
 void escrivirArchivo(const char *ruta, const char *texto) {
-  Serial << "Escribiendo en archivo: " << ruta << "\n";
+  // Serial << "Escribiendo en archivo: " << ruta << "\n";
 
   LittleFS.begin();
   File archivo = LittleFS.open(ruta, "w");
@@ -70,7 +70,7 @@ String leerArchivo(int id) {
   itoa(id, numero, 10);
   strcat(direccion, numero);
   strcat(direccion, ".txt");
-  Serial << "Leer en archivo: " << direccion << "\n";
+  // Serial << "Leer en archivo: " << direccion << "\n";
   LittleFS.begin();
   File archivo = LittleFS.open(direccion, "r");
   if (!archivo) {

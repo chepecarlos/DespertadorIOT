@@ -31,8 +31,8 @@ void siquienteAlarma() {
   pollo_tmp.toCharArray(pollo, 20);
   escrivirArchivo("/tiempoalarma.txt", pollo);
 
-  Serial << tiempoAlarma.unixtime() << " " << pollo_tmp << " " << pollo << "\n";
-  TelnetStream << tiempoAlarma.unixtime() << " " << pollo_tmp << " " << pollo << "\n";
+  // Serial << tiempoAlarma.unixtime() << " " << pollo_tmp << " " << pollo << "\n";
+  // TelnetStream << tiempoAlarma.unixtime() << " " << pollo_tmp << " " << pollo << "\n";
 }
 
 void inicializarAlarma() {
@@ -48,19 +48,19 @@ void inicializarAlarma() {
   alarmaVibrarAnteior = !alarmaVibrar;
   tiempoAlarma = DateTime(leerArchivo("/tiempoalarma.txt"));
 
-  Serial << "Alarma: " << hora << ":" << (minuto < 10 ? "0" : "") << minuto << " " << (pm ? "PM" : "AM") << "\n";
-  TelnetStream << "Alarma: " << hora << ":" << (minuto < 10 ? "0" : "") << minuto << " " << (pm ? "PM" : "AM") << "\n";
+  // // Serial << "Alarma: " << hora << ":" << (minuto < 10 ? "0" : "") << minuto << " " << (pm ? "PM" : "AM") << "\n";
+  // // TelnetStream << "Alarma: " << hora << ":" << (minuto < 10 ? "0" : "") << minuto << " " << (pm ? "PM" : "AM") << "\n";
 
-  Serial << "Dias: ";
-  TelnetStream << "Dias: ";
-  for (int dia = 0; dia < 7; dia++) {
-    Serial << (pedirDia(dias, dia) ? NombresDia[dia] : "") << " ";
-  }
-  Serial << "\n";
-  TelnetStream << "\n";
+  // // Serial << "Dias: ";
+  // // TelnetStream << "Dias: ";
+  // for (int dia = 0; dia < 7; dia++) {
+  //   Serial << (pedirDia(dias, dia) ? NombresDia[dia] : "") << " ";
+  // }
+  // Serial << "\n";
+  // TelnetStream << "\n";
 
-  Serial << "Unix" << tiempoAlarma.unixtime() << "\n";
-  TelnetStream << "Unix" << tiempoAlarma.unixtime() << "\n";
+  // Serial << "Unix" << tiempoAlarma.unixtime() << "\n";
+  // TelnetStream << "Unix" << tiempoAlarma.unixtime() << "\n";
 }
 
 void actualizarVibrador() {

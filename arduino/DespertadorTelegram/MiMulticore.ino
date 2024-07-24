@@ -7,8 +7,9 @@ void MultiCore(void* pvParameters) {
 
   while (true) {
     actualizarRTC();
+    escribirRTC();
     actualizarPantalla();
     actualizarAlarma();
-    delay(255);
+    vTaskDelay(250 / portTICK_RATE_MS);
   }
 }
