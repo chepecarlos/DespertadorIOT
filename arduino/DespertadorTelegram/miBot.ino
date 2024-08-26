@@ -81,6 +81,7 @@ void mensajeBot() {
           mensaje += "/novibrar apaga vibrador\n";
           mensaje += "/alarma enciende alarma\n";
           mensaje += "/noalarma apaga alarma\n";
+          mensaje += "/temperatura temperatura del cuarto\n";
           mensaje += "/hora +[hora] configura hora de la alarma\n";
           mensaje += "/dia +[dia](lun mar ... dom o todos) Condigura dia de la alarma\n";
           mensaje += "/actualizarHora Manda la nueva Hora del Reloc\n";
@@ -136,6 +137,10 @@ void mensajeBot() {
           Serial.println("Estado Actual");
           TelnetStream.println("Estado Actual");
           PedirEstado(msg.sender.id);
+        } else if (msg.text.equalsIgnoreCase("/temperatura")) {
+          Serial.println("Temperatura Actual");
+          TelnetStream.println("Temperatura Actual");
+          PedirTemperatura(msg.sender.id);
         } else if (msg.text.equalsIgnoreCase("/formatiar")) {
           if (formatiarMemoria()) {
             miBot.sendMessage(msg.sender.id, "Se formatio la memoria");
@@ -283,7 +288,7 @@ MiHora buscarHora(String mensaje) {
   return horaActual;
 }
 
-void actualizarHora(String mensaje, int ID_chat) {
+void actualizarHora(String mensaje, int64_t ID_chat) {
   int espacioPrimer = mensaje.indexOf(" ");
   int final = mensaje.length();
   String mensajeSinComando = mensaje.substring(espacioPrimer + 1, final);
@@ -318,7 +323,7 @@ void actualizarHora(String mensaje, int ID_chat) {
   miBot.sendMessage(ID_chat, "Actualizando Hora");
 }
 
-void actualizarDias(String mensaje, int ID) {
+void actualizarDias(String mensaje, int64_t ID) {
   int elNumero = 0;
   boolean Segir = true;
   int espacioPrimero = 0;
@@ -362,7 +367,7 @@ void actualizarDias(String mensaje, int ID) {
   miBot.sendMessage(ID, "Dias salvados");
 }
 
-void cambiarHora(String mensaje, int ID_chat) {
+void cambiarHora(String mensaje, int64_t ID_chat) {
   int espacioPrimer = mensaje.indexOf(" ");
   int final = mensaje.length();
   String mensajeSinComando = mensaje.substring(espacioPrimer + 1, final);
@@ -389,4 +394,11 @@ void cambiarHora(String mensaje, int ID_chat) {
   Serial.println("Configurando Hora");
   TelnetStream.println("Configurando Hora");
   miBot.sendMessage(ID_chat, "Configurando Hora");
+}
+
+void PedirTemperatura(int64_t ID_chat) {
+  String Mensaje = "Temperatura actual: ";
+  Mensaje += temperaturaActual();
+  Mensaje += "c";
+  miBot.sendMessage(ID_chat, Mensaje);
 }
