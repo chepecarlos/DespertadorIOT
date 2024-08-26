@@ -43,6 +43,7 @@ String NombresDia[7] = { "Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab" };
 
 Ticker cambiarLed;
 Ticker cambiarVibrador;
+Ticker cambiarFrecuencia;
 Ticker cambiarMelodia;
 
 #define noWifi 0
@@ -101,6 +102,8 @@ void loop() {
   actualizarEstado();
   if (enviarMensajeDesperta) {
     if (enviarMensaje("Empezando a despertar a ChepeCarlos")) {
+      Serial.println("Mensaje Despertando a ChepeCarlos enviado");
+      TelnetStream.println("Mensaje Despertando a ChepeCarlos enviado");
       enviarMensajeDesperta = false;
     }
   }

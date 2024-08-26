@@ -1,5 +1,4 @@
 
-
 void configurarRTC() {
   if (!rtc.begin()) {
     Serial.println("No encontrado RTC");

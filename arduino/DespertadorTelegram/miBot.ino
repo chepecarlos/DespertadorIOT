@@ -119,6 +119,7 @@ void mensajeBot() {
           escrivirArchivo("/vibrar.txt", String(alarmaVibrar));
           Serial.println("Parando el Vibrar");
           TelnetStream.println("Parando el Vibrar");
+          siquienteAlarma();
           miBot.sendMessage(msg.sender.id, "Parando el Vibrar");
         } else if (msg.text.equalsIgnoreCase("/estado")) {
           Serial.println("Estado Actual");

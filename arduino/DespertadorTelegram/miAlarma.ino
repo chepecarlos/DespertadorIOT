@@ -11,6 +11,9 @@ int minuto = 31;
 boolean pm = false;
 int dias = 0b0111110;
 
+int repeticiones = 0;
+int cantidadRepeticiones = 5;
+
 void siquienteAlarma() {
   if (dias == 0) return;
 
@@ -63,12 +66,27 @@ void inicializarAlarma() {
   // TelnetStream << "Unix" << tiempoAlarma.unixtime() << "\n";
 }
 
+void actualizarFrecuencia() {
+  if (repeticiones > cantidadRepeticiones) {
+    float nuevaFrecuencia = random(1, 6);
+    cambiarVibrador.attach(nuevaFrecuencia, actualizarVibrador);
+    cambiarMelodia.attach(nuevaFrecuencia / 4, MelodiaDesarmada);
+    repeticiones = 0;
+    cantidadRepeticiones = random(4, 10);
+    Serial.print("F: ");
+    Serial.print(nuevaFrecuencia);
+    Serial.print(" R: ");
+    Serial.println(cantidadRepeticiones);
+  }
+}
+
 void actualizarVibrador() {
   estadoVibrador = !estadoVibrador;
   if (estadoVibrador) {
     digitalWrite(pinVibrador, HIGH);
   } else {
     digitalWrite(pinVibrador, LOW);
+    repeticiones++;
   }
 }
 
@@ -76,32 +94,43 @@ void actualizarAlarma() {
 
   if (alarmaVibrar != alarmaVibrarAnteior) {
     if (alarmaVibrar) {
-      cambiarVibrador.attach(1.5, actualizarVibrador);
-      cambiarMelodia.attach(0.25 , MelodiaDesarmada);
+      Serial.println("Encendiendo Alarma");
+      cambiarVibrador.attach(1, actualizarVibrador);
+      cambiarMelodia.attach(1, MelodiaDesarmada);
+      cambiarFrecuencia.attach(1, actualizarFrecuencia);
       enviarMensajeDesperta = true;
     } else {
+      Serial.println("Apagando Alarma");
       cambiarVibrador.detach();
       cambiarMelodia.detach();
+      cambiarFrecuencia.detach();
       digitalWrite(pinVibrador, LOW);
       noTone(pinBuzzer);
     }
     alarmaVibrarAnteior = alarmaVibrar;
   }
 
-  if (alarmaActiva && !alarmaVibrar) {
-    if (tiempoActual > tiempoAlarma) {
-      alarmaVibrar = true;
-      char pollo[10];
-      String pollo_tmp = String(alarmaVibrar);
-      pollo_tmp.toCharArray(pollo, 10);
-      escrivirArchivo("/vibrar.txt", pollo);
-      siquienteAlarma();
 
-      Serial.println("Empezando a despertar a ChepeCarlos");
-      TelnetStream.println("Empezando a despertar a ChepeCarlos");
-      enviarMensajeDesperta = true;
-    }
-  }
+
+  // if (alarmaActiva && !alarmaVibrar) {
+  //   if (tiempoActual > tiempoAlarma) {
+  //     Serial.print(alarmaVibrar);
+  //     Serial.print(" -  ");
+  //     Serial.print(alarmaVibrarAnteior);
+
+  //     alarmaVibrar = true;
+  //     Serial.print(alarmaVibrar);
+  //     char pollo[10];
+  //     String pollo_tmp = String(alarmaVibrar);
+  //     pollo_tmp.toCharArray(pollo, 10);
+  //     escrivirArchivo("/vibrar.txt", pollo);
+  //     siquienteAlarma();
+
+  //     Serial.println("Empezando a despertar a ChepeCarlos");
+  //     TelnetStream.println("Empezando a despertar a ChepeCarlos");
+  //     // enviarMensajeDesperta = true;
+  //   }
+  // }
 }
 
 void cambiarVibrar(boolean estado) {

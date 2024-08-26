@@ -2,6 +2,7 @@
 #include "tonos.h"
 
 int pinBuzzer = 12;
+bool primeraMelodia = true;
 
 // TONOs in the melody:
 int melodia[8] = {
@@ -14,6 +15,7 @@ int duraccion[8] = {
 };
 
 void Melodia() {
+  primeraMelodia = true;
   for (int nota = 0; nota < 8; nota++) {
     int notaDuraccion = 1000 / duraccion[nota];
     tone(pinBuzzer, melodia[nota], notaDuraccion);
@@ -22,15 +24,18 @@ void Melodia() {
     delay(pausaNota);
     noTone(pinBuzzer);
   }
+  primeraMelodia = false;
 }
 
 int NotaActual = 0;
 
 void MelodiaDesarmada() {
-  noTone(pinBuzzer);
-  tone(pinBuzzer, melodia[NotaActual]);
-  NotaActual++;
-  if (NotaActual >= 8) {
-    NotaActual = 0;
+  if (!primeraMelodia) {
+    noTone(pinBuzzer);
+    tone(pinBuzzer, melodia[NotaActual]);
+    NotaActual++;
+    if (NotaActual >= 8) {
+      NotaActual = 0;
+    }
   }
 }
