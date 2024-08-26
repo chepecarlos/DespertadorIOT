@@ -1,3 +1,8 @@
+void escrivirArchivo(const char *ruta, String texto) {
+  char temporalChar[10];
+  texto.toCharArray(temporalChar, 10);
+  escrivirArchivo(ruta, temporalChar);
+}
 
 void escrivirArchivo(const char *ruta, const char *texto) {
   // Serial << "Escribiendo en archivo: " << ruta << "\n";
@@ -31,7 +36,6 @@ uint32_t leerArchivo(const char *ruta) {
   String Mensaje;
   while (archivo.available()) {
     Mensaje = archivo.readString();
-
   }
   archivo.close();
   LittleFS.end();

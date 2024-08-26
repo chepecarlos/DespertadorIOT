@@ -71,7 +71,6 @@ void mensajeBot() {
     // TelnetStream << "Mensaje: " << msg.text << " de " << msg.sender.username << " ID:" << msg.sender.id << "\n";
     for (int i = 0; i < cantidadChats; i++) {
       if (msg.sender.id == IDchat[i]) {
-
         if (msg.text.equalsIgnoreCase("/opciones")) {
           Serial.println("Enviando opciones");
           TelnetStream.println("Enviando opciones");
@@ -98,38 +97,26 @@ void mensajeBot() {
           PedirEstado(msg.sender.id);
         } else if (msg.text.equalsIgnoreCase("/alarma")) {
           alarmaActiva = true;
-          char pollo[10];
-          String pollo_tmp = String(alarmaActiva);
-          pollo_tmp.toCharArray(pollo, 10);
-          escrivirArchivo("/alarma.txt", pollo);
+          escrivirArchivo("/alarma.txt", String(alarmaActiva));
           siquienteAlarma();
           Serial.println("Alarma Activada");
           TelnetStream.println("Alarma Activada");
           miBot.sendMessage(msg.sender.id, "Alarma Activada");
         } else if (msg.text.equalsIgnoreCase("/noalarma")) {
           alarmaActiva = false;
-          char pollo[10];
-          String pollo_tmp = String(alarmaActiva);
-          pollo_tmp.toCharArray(pollo, 10);
-          escrivirArchivo("/alarma.txt", pollo);
+          escrivirArchivo("/alarma.txt", String(alarmaActiva));
           Serial.println("Alarma Desactivada");
           TelnetStream.println("Alarma Desactivada");
           miBot.sendMessage(msg.sender.id, "Alarma Desactivada");
         } else if (msg.text.equalsIgnoreCase("/vibrar") || msg.text.equalsIgnoreCase("/si")) {
           alarmaVibrar = true;
-          char pollo[10];
-          String pollo_tmp = String(alarmaVibrar);
-          pollo_tmp.toCharArray(pollo, 10);
-          escrivirArchivo("/vibrar.txt", pollo);
-          Serial.println("Empezando a Vibrar");
-          TelnetStream.println("Empezando a Vibrar");
+          escrivirArchivo("/vibrar.txt", String(alarmaVibrar));
+          Serial.println("Señal a Vibrar");
+          TelnetStream.println("Señal a Vibrar");
           miBot.sendMessage(msg.sender.id, "Empezando a Vibrar");
         } else if (msg.text.equalsIgnoreCase("/novibrar") || msg.text.equalsIgnoreCase("/no")) {
           alarmaVibrar = false;
-          char pollo[10];
-          String pollo_tmp = String(alarmaVibrar);
-          pollo_tmp.toCharArray(pollo, 10);
-          escrivirArchivo("/vibrar.txt", pollo);
+          escrivirArchivo("/vibrar.txt", String(alarmaVibrar));
           Serial.println("Parando el Vibrar");
           TelnetStream.println("Parando el Vibrar");
           miBot.sendMessage(msg.sender.id, "Parando el Vibrar");
