@@ -111,14 +111,28 @@ boolean pmAlarma() {
 
 void escribirRTC() {
   if (programarRTC) {
-    if (horaActualizar.Pm) {
-      horaActualizar.Hora = horaActualizar.Hora + 12;
+    if (horaActualizar.Hora >= 0) {
+      if (horaActualizar.Pm) {
+        horaActualizar.Hora = horaActualizar.Hora + 12;
+      }
+      int anno = tiempoActual.year();
+      int mes = tiempoActual.month();
+      int dia = tiempoActual.day();
+      rtc.adjust(DateTime(anno, mes, dia, horaActualizar.Hora, horaActualizar.Minuto, 0));
+      Serial.println("Configurando hora nueva");
+      horaActualizar.Hora = -1;
+      siquienteAlarma();
     }
-    int anno = tiempoActual.year();
-    int mes = tiempoActual.month();
-    int dia = tiempoActual.day();
-    rtc.adjust(DateTime(anno, mes, dia, horaActualizar.Hora, horaActualizar.Minuto, 0));
-    Serial.println("Configurando hora nueva");
+
+    if (fechaActualizar.Dia >= 0) {
+      int hora = tiempoActual.hour();
+      int minuto = tiempoActual.minute();
+      int segundo = tiempoActual.second();
+      rtc.adjust(DateTime(fechaActualizar.Anno, fechaActualizar.Mes, fechaActualizar.Dia, hora, minuto, segundo));
+      Serial.println("Configurando Fecha nueva");
+      fechaActualizar.Dia = -1;
+      siquienteAlarma();
+    }
     programarRTC = false;
   }
 }

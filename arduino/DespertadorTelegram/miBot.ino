@@ -84,6 +84,7 @@ void mensajeBot() {
           mensaje += "/hora +[hora] configura hora de la alarma\n";
           mensaje += "/dia +[dia](lun mar ... dom o todos) Condigura dia de la alarma\n";
           mensaje += "/actualizarHora Manda la nueva Hora del Reloc\n";
+          mensaje += "/actualizarFecha Manda la nueva Fecha del Reloc\n";
           mensaje += "/formatiar borra memoria interna\n";
           mensaje += "/opciones comandos disponibles\n";
           miBot.sendMessage(msg.sender.id, mensaje);
@@ -137,6 +138,8 @@ void mensajeBot() {
           }
         } else if (msg.text.indexOf("/actualizarHora") == 0) {
           cambiarHora(msg.text, msg.sender.id);
+        } else if (msg.text.indexOf("/actualizarFecha") == 0) {
+          CambiarFecha(msg.text, msg.sender.id);
         } else {
           Serial.println("Enviar /opciones");
           TelnetStream.println("Enviar /opciones");
@@ -225,12 +228,6 @@ MiHora buscarHora(String mensaje) {
   int dosPuntos = mensaje.indexOf(":");
   int espacio = mensaje.indexOf(" ", dosPuntos + 1);
   int final = mensaje.length();
-  Serial.print(":");
-  Serial.print(dosPuntos);
-  Serial.print(" Espacio ");
-  Serial.print(dosPuntos);
-  Serial.print(" Final ");
-  Serial.print(dosPuntos);
 
   if (dosPuntos > 0) {
     horaActual.Hora = mensaje.substring(0, dosPuntos).toInt();
@@ -239,9 +236,6 @@ MiHora buscarHora(String mensaje) {
   } else {
     horaActual.Hora = mensaje.substring(0, final).toInt();
   }
-  Serial.print(" Hora ");
-  Serial.print(horaActual.Hora);
-  Serial.println();
 
   if (dosPuntos > 0) {
     if (espacio > 0) {
@@ -275,6 +269,29 @@ MiHora buscarHora(String mensaje) {
 
   return horaActual;
 }
+
+MiFecha buscarFecha(String mensaje) {
+  MiFecha fechaActual = { -1, 0, 0 };
+  int primerEspacio = mensaje.indexOf("/");
+  int segundoEspacio = mensaje.indexOf("/", primerEspacio + 1);
+  int final = mensaje.length();
+
+  if (primerEspacio < 0 and segundoEspacio < 0) {
+    return fechaActual;
+  }
+
+  fechaActual.Dia = mensaje.substring(0, primerEspacio).toInt();
+  fechaActual.Mes = mensaje.substring(primerEspacio + 1, segundoEspacio).toInt();
+  fechaActual.Anno = mensaje.substring(segundoEspacio + 1, final).toInt();
+
+  if (fechaActual.Dia > 31 || fechaActual.Mes > 12 || fechaActual.Anno < 2000) {
+    fechaActual.Dia = -1;
+    return fechaActual;
+  }
+
+  return fechaActual;
+}
+
 
 void actualizarHora(String mensaje, int64_t ID_chat) {
   int espacioPrimer = mensaje.indexOf(" ");
@@ -382,6 +399,36 @@ void cambiarHora(String mensaje, int64_t ID_chat) {
   Serial.println("Configurando Hora");
   TelnetStream.println("Configurando Hora");
   miBot.sendMessage(ID_chat, "Configurando Hora");
+}
+
+void CambiarFecha(String mensaje, int64_t ID_chat) {
+  int espacioPrimer = mensaje.indexOf(" ");
+  int final = mensaje.length();
+  String mensajeSinComando = mensaje.substring(espacioPrimer + 1, final);
+  if (mensajeSinComando == "") return;
+
+  MiFecha fechaNueva = buscarFecha(mensajeSinComando);
+
+  if (fechaNueva.Dia < 0) {
+    Serial.println("Error en formato de Fecha");
+    TelnetStream.println("Error en formato de Fecha");
+    miBot.sendMessage(ID_chat, "Error en formato de Fecha");
+    return;
+  }
+
+  Serial.print("Fecha nueva: ");
+  Serial.print(fechaNueva.Dia);
+  Serial.print("/");
+  Serial.print(fechaNueva.Mes);
+  Serial.print("/");
+  Serial.println(fechaNueva.Anno);
+
+  programarRTC = true;
+  fechaActualizar = fechaNueva;
+
+  Serial.println("Configurando Fecha");
+  TelnetStream.println("Configurando Fecha");
+  miBot.sendMessage(ID_chat, "Configurando Fecha");
 }
 
 void PedirTemperatura(int64_t ID_chat) {

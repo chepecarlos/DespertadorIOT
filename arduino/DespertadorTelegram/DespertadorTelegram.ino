@@ -36,8 +36,15 @@ struct MiHora {
   bool Pm;
 };
 
+struct MiFecha {
+  int Dia;
+  int Mes;
+  int Anno;
+};
+
 bool programarRTC = false;
 MiHora horaActualizar = { -1, 0, false };
+MiFecha fechaActualizar = { -1, 0, 0 };
 
 String NombresDia[7] = { "Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab" };
 
