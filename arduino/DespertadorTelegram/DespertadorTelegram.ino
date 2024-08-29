@@ -52,6 +52,7 @@ Ticker cambiarLed;
 Ticker cambiarVibrador;
 Ticker cambiarFrecuencia;
 Ticker cambiarMelodia;
+Ticker recordatorioAlarma;
 
 #define noWifi 0
 #define noBot 1
@@ -63,6 +64,7 @@ boolean EstadoLed = false;
 int estado = noWifi;
 int estadoAnterior = -1;
 boolean enviarMensajeDesperta = false;
+boolean enviarMensajeRecordatorio = false;
 
 int botonApagado = 27;
 int buzzer = 4;
@@ -112,6 +114,13 @@ void loop() {
       Serial.println("Mensaje Despertando a ChepeCarlos enviado");
       TelnetStream.println("Mensaje Despertando a ChepeCarlos enviado");
       enviarMensajeDesperta = false;
+    }
+  }
+  if (enviarMensajeRecordatorio) {
+    if (enviarMensaje("(Recordatorio) Despertando a ChepeCarlos")) {
+      Serial.println("(Recordatorio) Despertando a ChepeCarlos");
+      TelnetStream.println("(Recordatorio) Despertando a ChepeCarlos");
+      enviarMensajeRecordatorio = false;
     }
   }
 }

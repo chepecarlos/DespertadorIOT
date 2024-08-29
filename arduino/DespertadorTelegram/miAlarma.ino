@@ -104,6 +104,7 @@ void actualizarAlarma() {
       cambiarVibrador.detach();
       cambiarMelodia.detach();
       cambiarFrecuencia.detach();
+      recordatorioAlarma.detach();
       digitalWrite(pinVibrador, LOW);
       noTone(pinBuzzer);
     }
@@ -112,25 +113,17 @@ void actualizarAlarma() {
 
 
 
-  // if (alarmaActiva && !alarmaVibrar) {
-  //   if (tiempoActual > tiempoAlarma) {
-  //     Serial.print(alarmaVibrar);
-  //     Serial.print(" -  ");
-  //     Serial.print(alarmaVibrarAnteior);
-
-  //     alarmaVibrar = true;
-  //     Serial.print(alarmaVibrar);
-  //     char pollo[10];
-  //     String pollo_tmp = String(alarmaVibrar);
-  //     pollo_tmp.toCharArray(pollo, 10);
-  //     escrivirArchivo("/vibrar.txt", pollo);
-  //     siquienteAlarma();
-
-  //     Serial.println("Empezando a despertar a ChepeCarlos");
-  //     TelnetStream.println("Empezando a despertar a ChepeCarlos");
-  //     // enviarMensajeDesperta = true;
-  //   }
-  // }
+  if (alarmaActiva && !alarmaVibrar) {
+    if (tiempoActual > tiempoAlarma) {
+      alarmaVibrar = true;
+      escrivirArchivo("/vibrar.txt", String(alarmaVibrar));
+      siquienteAlarma();
+      Serial.println("Empezando a despertar a ChepeCarlos");
+      TelnetStream.println("Empezando a despertar a ChepeCarlos");
+      enviarMensajeDesperta = true;
+      recordatorioAlarma.attach(5 * 60, mendajeRecordatorio);
+    }
+  }
 }
 
 void cambiarVibrar(boolean estado) {

@@ -437,3 +437,7 @@ void PedirTemperatura(int64_t ID_chat) {
   Mensaje += "c";
   miBot.sendMessage(ID_chat, Mensaje);
 }
+
+void mendajeRecordatorio() {
+  enviarMensajeRecordatorio = true;
+}
