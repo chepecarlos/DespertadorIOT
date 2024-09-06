@@ -28,7 +28,17 @@ ESP8266WiFiMulti wifiMulti;
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <TelnetStream.h>
+#include <MQTT.h>
 #include "LittleFS.h"
+
+struct estado {
+  bool actual;
+  bool anterior;
+};
+
+estado estadoWifi = { false, false };
+estado estadoMQTT = { false, false };
+estado permisos = { false, false };
 
 struct MiHora {
   int Hora;
@@ -41,6 +51,7 @@ struct MiFecha {
   int Mes;
   int Anno;
 };
+
 
 bool programarRTC = false;
 MiHora horaActualizar = { -1, 0, false };
@@ -95,10 +106,19 @@ void setup() {
     "MultiCore", /* Nombre del proceso  */
     10000,       /* Tamano de palabra */
     NULL,        /* parametros de entrada */
-    0,           /* Prioridas del proceso */
+    5,           /* Prioridas del proceso */
     NULL,        /* Manejo del proceso  */
     0);          /* Procesador a poner la operacion */
   delay(100);
+
+  xTaskCreatePinnedToCore(
+    procesoMQTT,   /* Nombre de la funcion */
+    "procesoMQTT", /* Nombre del proceso  */
+    10000,         /* Tamano de palabra */
+    NULL,          /* parametros de entrada */
+    8,             /* Prioridas del proceso */
+    NULL,          /* Manejo del proceso  */
+    1);
 
   actualizarEstado();
   conectarWifi();
@@ -109,6 +129,7 @@ void loop() {
   actualizarWifi();
   actualizarBot();
   actualizarEstado();
+  mensajePermisos();
   if (enviarMensajeDesperta) {
     if (enviarMensaje("Empezando a despertar a ChepeCarlos")) {
       Serial.println("Mensaje Despertando a ChepeCarlos enviado");
@@ -121,6 +142,17 @@ void loop() {
       Serial.println("(Recordatorio) Despertando a ChepeCarlos");
       TelnetStream.println("(Recordatorio) Despertando a ChepeCarlos");
       enviarMensajeRecordatorio = false;
+    }
+  }
+}
+
+void mensajePermisos() {
+  if (permisos.actual != permisos.anterior) {
+    permisos.anterior = permisos.actual;
+    if (permisos.actual) {
+      Serial.println("Permisos: Activados");
+    } else {
+      Serial.println("Permisos: Desactivados");
     }
   }
 }

@@ -116,12 +116,17 @@ void mensajeBot() {
           TelnetStream.println("Señal a Vibrar");
           miBot.sendMessage(msg.sender.id, "Empezando a Vibrar");
         } else if (msg.text.equalsIgnoreCase("/novibrar") || msg.text.equalsIgnoreCase("/no")) {
-          alarmaVibrar = false;
-          escrivirArchivo("/vibrar.txt", String(alarmaVibrar));
-          Serial.println("Parando el Vibrar");
-          TelnetStream.println("Parando el Vibrar");
-          siquienteAlarma();
-          miBot.sendMessage(msg.sender.id, "Parando el Vibrar");
+          if (permisos.actual) {
+            alarmaVibrar = false;
+            escrivirArchivo("/vibrar.txt", String(alarmaVibrar));
+            Serial.println("Parando el Vibrar");
+            TelnetStream.println("Parando el Vibrar");
+            siquienteAlarma();
+            miBot.sendMessage(msg.sender.id, "Parando el Vibrar");
+            permisos.actual = false;
+          } else {
+            miBot.sendMessage(msg.sender.id, "Lo siento no tienes permisos, preciona el boton");
+          }
         } else if (msg.text.equalsIgnoreCase("/estado")) {
           Serial.println("Estado Actual");
           TelnetStream.println("Estado Actual");
